@@ -1,0 +1,11 @@
+{
+    "outputDirectory": ".",
+    "buildCommand": "",
+    "installCommand": "",
+    "rewrites": [
+        {
+            "source": "/",
+            "destination": "/feature-store.html"
+        }
+    ]
+}
