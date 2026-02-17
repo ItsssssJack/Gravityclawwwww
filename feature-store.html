@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravity Claw — Feature Store</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #081518;
+      --surface: #0d2228;
+      --card: #112a31;
+      --card-hover: #163840;
+      --border: #1e4a54;
+      --text: #e8f4f0;
+      --text-dim: #8aafb8;
+      --text-muted: #4e7a84;
+      --accent: #22d3a8;
+      --accent-glow: rgba(34, 211, 168, .18);
+      --green: #34d399;
+      --green-glow: rgba(52, 211, 153, .15);
+      --radius: 14px;
+      --radius-sm: 10px;
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(34, 211, 168, .06), transparent 60%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(20, 120, 160, .05), transparent 50%);
+      pointer-events: none;
+      z-index: 0
+    }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 40px 24px 10px;
+      position: relative;
+      z-index: 1
+    }
+
+    .hero-img {
+      width: min(420px, 90vw);
+      border-radius: 18px;
+      margin: 0 auto 20px;
+      display: block;
+      box-shadow: 0 12px 50px rgba(0, 0, 0, .5), 0 0 80px rgba(34, 211, 168, .08);
+      border: 1px solid rgba(34, 211, 168, .15)
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 4.5vw, 3rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+      margin-bottom: 6px
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, #22d3a8, #14b8a6, #0ea5e9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
+
+    .hero .sub {
+      font-size: .95rem;
+      color: var(--text-dim);
+      max-width: 520px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+      font-weight: 400
+    }
+
+    .hero .stats {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px
+    }
+
+    .hero .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: .82rem;
+      color: var(--text-dim)
+    }
+
+    .hero .stat strong {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-right: 3px
+    }
+
+    /* SEARCH */
+    .controls {
+      max-width: 720px;
+      margin: 20px auto 16px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1
+    }
+
+    .search-box {
+      position: relative
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 13px 16px 13px 46px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: .95rem;
+      font-family: 'Outfit', sans-serif;
+      outline: none;
+      transition: .25s
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow)
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted)
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px
+    }
+
+    /* CATEGORY NAV */
+    .cat-nav {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1
+    }
+
+    .cat-btn {
+      font-size: .78rem;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: .25s;
+      white-space: nowrap;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .cat-btn:hover {
+      border-color: var(--accent);
+      color: var(--text)
+    }
+
+    .cat-btn.active {
+      color: #fff;
+      border-color: transparent
+    }
+
+    .cat-btn .emoji {
+      font-size: .9rem
+    }
+
+    /* SECTION HEADERS */
+    .section-header {
+      max-width: 1100px;
+      margin: 32px auto 14px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 1
+    }
+
+    .section-header .emoji {
+      font-size: 1.4rem
+    }
+
+    .section-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700
+    }
+
+    .section-header .line {
+      flex: 1;
+      height: 1px;
+      opacity: .3
+    }
+
+    .section-header .count {
+      font-size: .75rem;
+      color: var(--text-muted);
+      font-weight: 500
+    }
+
+    /* GRID */
+    .section-grid {
+      max-width: 1100px;
+      margin: 0 auto 8px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      position: relative;
+      z-index: 1
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      cursor: pointer;
+      transition: .25s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      opacity: 0;
+      transition: .25s
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .25)
+    }
+
+    .card:hover::before {
+      opacity: 1
+    }
+
+    .card.selected {
+      border-color: var(--green)
+    }
+
+    .card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #000;
+      font-size: .8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .card h3 {
+      font-size: .92rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      line-height: 1.3;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding-right: 30px
+    }
+
+    .card h3 .emoji {
+      font-size: 1rem
+    }
+
+    .card p {
+      font-size: .78rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+      margin-bottom: 8px
+    }
+
+    .card .origin {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap
+    }
+
+    .card .origin span {
+      font-size: .6rem;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .04);
+      color: var(--text-muted);
+      font-weight: 500
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      position: relative;
+      z-index: 1
+    }
+
+    /* BASKET */
+    .basket {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: transform .3s ease
+    }
+
+    .basket.hidden {
+      transform: translateY(100%)
+    }
+
+    .basket-bar {
+      background: rgba(13, 34, 40, .92);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: space-between;
+      flex-wrap: wrap
+    }
+
+    .basket-info {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .basket-count {
+      background: var(--accent);
+      color: #000;
+      font-weight: 800;
+      font-size: .85rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .basket-info span {
+      font-size: .9rem;
+      font-weight: 600
+    }
+
+    .basket-actions {
+      display: flex;
+      gap: 10px
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000
+    }
+
+    .btn-primary:hover {
+      background: #1bc49b;
+      transform: translateY(-1px)
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim)
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .65);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .3s
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .modal-head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .modal-head h2 {
+      font-size: 1.15rem;
+      font-weight: 700
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 8px
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1
+    }
+
+    .modal-body pre {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      line-height: 1.7;
+      color: var(--accent);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 50vh;
+      overflow-y: auto
+    }
+
+    .modal-foot {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end
+    }
+
+    .copy-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-60px);
+      background: var(--green);
+      color: #000;
+      padding: 10px 24px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: .85rem;
+      z-index: 300;
+      transition: .3s;
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1
+    }
+
+    .spacer {
+      height: 100px
+    }
+
+    @media(max-width:600px) {
+      .hero h1 {
+        font-size: 1.6rem
+      }
+
+      .section-grid {
+        grid-template-columns: 1fr
+      }
+
+      .basket-bar {
+        flex-direction: column;
+        text-align: center
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="hero">
+    <img class="hero-img" src="gravity-claw-hero.png" alt="Gravity Claw">
+    <h1>Gravity <span>Claw</span></h1>
+    <p class="sub">Pick the features you want. Get a prompt to build them. <br>Powered by the open-source AI agent
+      ecosystem.</p>
+    <div class="stats">
+      <div class="stat"><strong id="totalCount">0</strong> features</div>
+      <div class="stat"><strong id="selectedCount">0</strong> selected</div>
+      <div class="stat"><strong>7</strong> projects</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <input type="text" id="search" placeholder="Search features…">
+    </div>
+  </div>
+
+  <div class="cat-nav" id="catNav"></div>
+  <div id="content"></div>
+  <div class="spacer"></div>
+
+  <div class="basket hidden" id="basket">
+    <div class="basket-bar">
+      <div class="basket-info">
+        <div class="basket-count" id="basketCount">0</div><span>features in basket</span>
+      </div>
+      <div class="basket-actions">
+        <button class="btn btn-outline" onclick="clearBasket()">Clear</button>
+        <button class="btn btn-primary" onclick="openModal()">📋 Generate Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <h2>🧬 Your Build Prompt</h2><button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre id="promptOutput"></pre>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="copyPrompt()">📋 Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+  <div class="copy-toast" id="toast">✅ Copied to clipboard!</div>
+
+  <script>
+    // ── CATEGORY CONFIG (emoji + color) ──
+    const CAT_CONFIG = {
+      'Messaging & Channels': { emoji: '💬', color: '#0ea5e9', label: 'Messaging' },
+      'Voice & Speech': { emoji: '🎙️', color: '#f59e0b', label: 'Voice' },
+      'Memory & Context': { emoji: '🧠', color: '#a78bfa', label: 'Memory' },
+      'LLM & Models': { emoji: '✨', color: '#ec4899', label: 'Models' },
+      'Tools & Automation': { emoji: '⚡', color: '#22d3a8', label: 'Tools' },
+      'Proactive Behavior': { emoji: '🔔', color: '#f97316', label: 'Proactive' },
+      'Security & Isolation': { emoji: '🛡️', color: '#ef4444', label: 'Security' },
+      'Agent Architecture': { emoji: '🏗️', color: '#14b8a6', label: 'Architecture' },
+      'Platform & Deployment': { emoji: '☁️', color: '#6366f1', label: 'Deployment' },
+      'UX & Interaction': { emoji: '🎨', color: '#e879f9', label: 'UX' },
+    };
+
+    // ── FEATURES ──
+    const FEATURES = [
+      // MESSAGING & CHANNELS
+      { id: "whatsapp", name: "WhatsApp", desc: "Send & receive messages via WhatsApp with Baileys. Media, groups, QR pairing.", cat: "Messaging & Channels", from: ["OpenClaw", "NanoClaw", "Nanobot"], prompt: "Add WhatsApp messaging integration using the Baileys library. Support text, media, group messages, and QR-code pairing for authentication. Store session credentials persistently." },
+      { id: "telegram", name: "Telegram Bot", desc: "Full bot with inline keyboards, voice messages, group management, rich media.", cat: "Messaging & Channels", from: ["OpenClaw", "Nanobot"], prompt: "Add a Telegram bot integration using grammY or Telegraf. Support text, inline keyboards, voice messages, group chats, and rich media." },
+      { id: "discord", name: "Discord Bot", desc: "Slash commands, reactions, thread management, voice channel awareness.", cat: "Messaging & Channels", from: ["OpenClaw", "ZeroClaw"], prompt: "Add Discord bot integration using discord.js. Support slash commands, reactions, threads, embeds, and voice channel presence." },
+      { id: "slack", name: "Slack Bot", desc: "Workspace bot with Bolt SDK — channels, threads, DMs, slash commands.", cat: "Messaging & Channels", from: ["OpenClaw", "Nanobot"], prompt: "Add Slack bot integration using Bolt SDK. Support channels, threaded replies, DMs, slash commands, and interactive blocks." },
+      { id: "signal", name: "Signal Messaging", desc: "End-to-end encrypted messaging via signal-cli bridge.", cat: "Messaging & Channels", from: ["OpenClaw"], prompt: "Add Signal messaging integration using signal-cli bridge. Support E2E encrypted text and media messaging." },
+      { id: "imessage", name: "iMessage", desc: "Apple ecosystem messaging via BlueBubbles server.", cat: "Messaging & Channels", from: ["OpenClaw"], prompt: "Add iMessage integration via BlueBubbles server. Support sending/receiving iMessages, reactions, and media." },
+      { id: "msteams", name: "Microsoft Teams", desc: "Enterprise workspace channel integration.", cat: "Messaging & Channels", from: ["OpenClaw"], prompt: "Add Microsoft Teams integration. Support channel messages, DMs, adaptive cards, and meeting notifications." },
+      { id: "webchat", name: "WebChat UI", desc: "Browser chat with markdown, typing indicators, file upload.", cat: "Messaging & Channels", from: ["OpenClaw"], prompt: "Build a WebChat browser interface with markdown rendering, typing indicators, file upload, and WebSocket messaging." },
+      { id: "email", name: "Gmail Integration", desc: "Read, send, and auto-respond to emails with Pub/Sub notifications.", cat: "Messaging & Channels", from: ["OpenClaw", "Nanobot"], prompt: "Add Gmail integration using Gmail API with Pub/Sub for real-time email notifications. Support reading, composing, and sending." },
+      { id: "multichannel", name: "Multi-Channel Router", desc: "Unified message bus with per-channel formatting and routing rules.", cat: "Messaging & Channels", from: ["OpenClaw", "ZeroClaw"], prompt: "Build a unified multi-channel message router. All messages flow through a single bus with per-channel formatting and routing." },
+
+      // VOICE & SPEECH
+      { id: "voice-transcribe", name: "Voice Transcription", desc: "Transcribe voice messages to text using Whisper API.", cat: "Voice & Speech", from: ["OpenClaw", "Nanobot"], prompt: "Add voice transcription. When a voice message arrives, transcribe via Whisper API, then process the text normally." },
+      { id: "voice-wake", name: "Voice Wake Word", desc: "Always-on 'Hey Claw' detection for hands-free activation.", cat: "Voice & Speech", from: ["OpenClaw"], prompt: "Add always-on voice wake word detection. Listen for a trigger phrase (e.g. 'Hey Claw') using local speech recognition and activate talk mode." },
+      { id: "talk-mode", name: "Talk Mode", desc: "Full duplex voice conversations with TTS responses via ElevenLabs.", cat: "Voice & Speech", from: ["OpenClaw"], prompt: "Add Talk Mode for voice conversations. Record speech, transcribe via Whisper, send to LLM, stream response as audio via ElevenLabs TTS." },
+      { id: "tts", name: "Text-to-Speech", desc: "Convert text responses to audio voice messages.", cat: "Voice & Speech", from: ["OpenClaw", "Nanobot"], prompt: "Add text-to-speech output. Convert text responses to audio using ElevenLabs or OpenAI TTS and send as voice messages." },
+
+      // MEMORY & CONTEXT
+      { id: "sqlite-memory", name: "SQLite Memory", desc: "Store facts, preferences, and context persistently across sessions.", cat: "Memory & Context", from: ["NanoClaw", "Nanobot"], prompt: "Add persistent SQLite memory. Store facts, preferences, and conversation context. Load relevant memories into each LLM call." },
+      { id: "knowledge-graph", name: "Knowledge Graph", desc: "Interconnected graph of entities, relations, and traversal queries.", cat: "Memory & Context", from: ["memU"], prompt: "Add a knowledge graph memory system. Store memories as interconnected entities with relationships. Support graph traversal queries." },
+      { id: "session-pruning", name: "Context Pruning", desc: "Auto-compact long conversations to stay within token limits.", cat: "Memory & Context", from: ["OpenClaw"], prompt: "Add session context pruning. Auto-summarize older messages when approaching token limits. Support /compact command." },
+      { id: "multimodal-memory", name: "Multimodal Memory", desc: "Remember context from images, audio, video — not just text.", cat: "Memory & Context", from: ["memU"], prompt: "Add multimodal memory. Extract and store information from images, audio, video, and documents with cross-modal retrieval." },
+      { id: "self-evolving", name: "Self-Evolving Memory", desc: "Adapts structure based on usage, merges duplicates, decays stale info.", cat: "Memory & Context", from: ["memU"], prompt: "Add self-evolving memory. Track access patterns, merge duplicates, reorganize structure, and implement memory decay." },
+      { id: "markdown-memory", name: "Markdown Memory", desc: "Human-readable .md files for persistent context — git-friendly.", cat: "Memory & Context", from: ["OpenClaw", "NanoClaw"], prompt: "Add Markdown-based persistent memory. Store preferences and facts as local .md files. Human-readable and git-friendly." },
+
+      // LLM & MODELS
+      { id: "multi-llm", name: "Multi-LLM Providers", desc: "Hot-swap between GPT, Claude, Gemini, DeepSeek, Llama & more.", cat: "LLM & Models", from: ["OpenClaw", "ZeroClaw", "Nanobot"], prompt: "Add multi-LLM support with a unified interface. Support OpenAI, Anthropic, Google, DeepSeek, Groq, and local models. Hot-swap via /model command." },
+      { id: "model-failover", name: "Model Failover", desc: "Auto-fallback to secondary model on failure, timeout, or rate limit.", cat: "LLM & Models", from: ["OpenClaw", "ZeroClaw"], prompt: "Add model failover. Define a priority list. Auto-retry with next provider on failure, timeout, or rate limit." },
+      { id: "openrouter", name: "OpenRouter", desc: "Access 100+ models through one API key, one endpoint.", cat: "LLM & Models", from: ["ZeroClaw", "Nanobot", "memU"], prompt: "Add OpenRouter integration. Use a single API key to access GPT, Claude, Gemini, Llama, Mistral, and more." },
+      { id: "local-llm", name: "Local LLMs (Ollama)", desc: "Run models locally for fully offline, private AI processing.", cat: "LLM & Models", from: ["OpenClaw", "Nanobot"], prompt: "Add local LLM support via Ollama. Allow fully offline private operation with locally-hosted models." },
+      { id: "thinking-levels", name: "Thinking Levels", desc: "Control reasoning depth — quick answers to deep multi-step analysis.", cat: "LLM & Models", from: ["OpenClaw"], prompt: "Add thinking level control. Support /think command with levels: off, low, medium, high for varying reasoning depth." },
+
+      // TOOLS & AUTOMATION
+      { id: "shell-exec", name: "Shell Commands", desc: "Execute commands on the host and return stdout/stderr to the LLM.", cat: "Tools & Automation", from: ["OpenClaw", "ZeroClaw", "Nanobot"], prompt: "Add shell command execution. Run commands, capture output, return to LLM. Include allowlists, confirmation, and timeouts." },
+      { id: "file-ops", name: "File Operations", desc: "Read, write, list, search files and directories.", cat: "Tools & Automation", from: ["OpenClaw", "ZeroClaw", "Nanobot"], prompt: "Add file system tools. Read, write, create, delete, list, search files. Include path allowlisting and size limits." },
+      { id: "browser", name: "Browser Automation", desc: "Control headless Chrome — navigate, click, screenshot, scrape.", cat: "Tools & Automation", from: ["OpenClaw", "ZeroClaw"], prompt: "Add browser automation with Puppeteer/Playwright. Navigate, click, type, screenshot, extract content." },
+      { id: "web-search", name: "Web Search", desc: "Real-time search via Google, Bing, or DuckDuckGo APIs.", cat: "Tools & Automation", from: ["OpenClaw", "NanoClaw", "Nanobot"], prompt: "Add web search via Google/Bing/DuckDuckGo APIs. Return top results with titles, snippets, URLs." },
+      { id: "cron", name: "Scheduled Tasks", desc: "Cron-based recurring jobs — daily briefings, weekly reports.", cat: "Tools & Automation", from: ["OpenClaw", "NanoClaw"], prompt: "Add a cron scheduler. Support cron expressions or natural language scheduling. List, pause, delete tasks." },
+      { id: "webhooks", name: "Webhook Triggers", desc: "Accept webhooks from GitHub, Stripe, IFTTT to trigger actions.", cat: "Tools & Automation", from: ["OpenClaw"], prompt: "Add webhook support. Expose HTTP endpoints for incoming webhooks. Parse payloads and route to the agent." },
+      { id: "mcp", name: "MCP Tool Bridge", desc: "Connect to any MCP server for dynamic tool integration.", cat: "Tools & Automation", from: ["OpenClaw", "Nanobot"], prompt: "Add MCP client bridge. Read server configs from JSON, connect via stdio/SSE, list tools, expose to LLM." },
+      { id: "skills", name: "Skills System", desc: "Drop-in markdown skill files to extend capabilities.", cat: "Tools & Automation", from: ["OpenClaw", "NanoClaw", "Nanobot"], prompt: "Add a skills system. Skills are markdown files defining new capabilities. Load from /skills directory on startup." },
+
+      // PROACTIVE BEHAVIOR
+      { id: "morning-checkin", name: "Morning Briefing", desc: "Daily briefing with weather, calendar, tasks, and news.", cat: "Proactive Behavior", from: ["OpenClaw"], prompt: "Add proactive morning check-in. At configurable time, gather weather, calendar, tasks, news and send a briefing." },
+      { id: "evening-recap", name: "Evening Recap", desc: "End-of-day summary of messages, tasks, and key learnings.", cat: "Proactive Behavior", from: ["OpenClaw"], prompt: "Add evening recap. Generate a daily summary of messages handled, tasks completed, and pending items." },
+      { id: "heartbeat", name: "Heartbeat System", desc: "Background loop checking for events and triggering proactive actions.", cat: "Proactive Behavior", from: ["OpenClaw"], prompt: "Add a heartbeat loop. Check for new events at intervals and proactively notify the user when something noteworthy is detected." },
+      { id: "proactive-recs", name: "Smart Recommendations", desc: "Suggest actions based on learned behavior patterns.", cat: "Proactive Behavior", from: ["memU"], prompt: "Add proactive recommendations. Track behavior patterns and suggest actions before being asked." },
+
+      // SECURITY & ISOLATION
+      { id: "container-sandbox", name: "Container Sandbox", desc: "Run commands in isolated Docker/Apple containers. Safe shell access.", cat: "Security & Isolation", from: ["NanoClaw", "ZeroClaw"], prompt: "Add container sandboxing. Run all shell commands inside isolated Docker containers. Mount only allowed directories." },
+      { id: "allowlists", name: "Command Allowlists", desc: "Restrict which commands, paths, and endpoints the agent can access.", cat: "Security & Isolation", from: ["OpenClaw", "ZeroClaw"], prompt: "Add security allowlists for commands, file paths, and network endpoints. Block and log unauthorized actions." },
+      { id: "encrypted-secrets", name: "Encrypted Secrets", desc: "API keys encrypted at rest with AES-256 and master key.", cat: "Security & Isolation", from: ["ZeroClaw"], prompt: "Add encrypted secret storage. Encrypt API keys at rest with AES-256. Decrypt only at runtime via master key." },
+      { id: "air-gapped", name: "Air-Gapped Mode", desc: "Fully offline with local models — zero cloud dependencies.", cat: "Security & Isolation", from: ["ZeroClaw"], prompt: "Add air-gapped mode. Use local LLMs, disable all external API calls, store everything locally." },
+
+      // AGENT ARCHITECTURE
+      { id: "agent-loop", name: "Agentic Tool Loop", desc: "LLM → tool → result → LLM cycle for autonomous multi-step tasks.", cat: "Agent Architecture", from: ["OpenClaw", "Nanobot"], prompt: "Add an agentic tool loop. The LLM calls tools, gets results, and iterates until a final response or max iterations." },
+      { id: "agent-swarms", name: "Agent Swarms", desc: "Spawn specialized sub-agents that collaborate in parallel.", cat: "Agent Architecture", from: ["NanoClaw"], prompt: "Add agent swarms. Spawn specialized sub-agents (researcher, coder, reviewer) that collaborate on complex tasks." },
+      { id: "agent-to-agent", name: "Agent-to-Agent Comms", desc: "Multiple sessions that discover, message, and coordinate.", cat: "Agent Architecture", from: ["OpenClaw"], prompt: "Add agent-to-agent communication. Support multiple sessions with sessions_list, sessions_history, sessions_send." },
+      { id: "mesh-workflows", name: "Mesh Workflows", desc: "/mesh command auto-plans and executes multi-step workflows.", cat: "Agent Architecture", from: ["OpenClaw"], prompt: "Add mesh workflows. /mesh <goal> decomposes into subtasks, plans order, runs each step, reports progress." },
+      { id: "plugin-system", name: "Plugin System", desc: "Swap providers, channels, tools, memory via config — no code changes.", cat: "Agent Architecture", from: ["ZeroClaw"], prompt: "Add a trait-based plugin system. Define interfaces for Provider, Channel, Tool, Memory. Swap via config." },
+
+      // PLATFORM & DEPLOYMENT
+      { id: "docker", name: "Docker Deploy", desc: "One-command deployment with volumes, env vars, auto-restart.", cat: "Platform & Deployment", from: ["OpenClaw"], prompt: "Add Docker deployment. Dockerfile + docker-compose with persistent volumes, env vars, auto-restart, health checks." },
+      { id: "cloudflare", name: "Cloudflare Workers", desc: "Serverless deployment on Cloudflare with Durable Objects.", cat: "Platform & Deployment", from: ["Moltworker"], prompt: "Add Cloudflare Workers deployment. Adapt to run as a Worker with Durable Objects and KV/D1 for state." },
+      { id: "esp32", name: "ESP32 Microcontroller", desc: "$5 hardware brain that calls cloud LLMs — ultra-minimal.", cat: "Platform & Deployment", from: ["MimiClaw"], prompt: "Add ESP32-S3 support. Minimal firmware connecting via WiFi, receiving instructions, forwarding to cloud LLMs." },
+      { id: "macos-app", name: "macOS Menu Bar", desc: "Native system tray app with voice controls and quick chat.", cat: "Platform & Deployment", from: ["OpenClaw"], prompt: "Add a macOS menu bar app. System tray status, quick chat, Voice Wake toggle, Talk Mode overlay." },
+      { id: "mobile-nodes", name: "iOS & Android", desc: "Mobile companions with camera, GPS, screen recording, push.", cat: "Platform & Deployment", from: ["OpenClaw"], prompt: "Add mobile companion support. Expose camera, GPS, screen recording, push notifications via gateway." },
+
+      // UX & INTERACTION
+      { id: "typing-indicators", name: "Typing Indicators", desc: "Show 'Agent is typing…' while processing responses.", cat: "UX & Interaction", from: ["OpenClaw"], prompt: "Add typing indicators. Send typing status while the LLM processes. Clear when response is sent." },
+      { id: "chat-commands", name: "Slash Commands", desc: "/status, /new, /compact, /model, /usage — session control.", cat: "UX & Interaction", from: ["OpenClaw"], prompt: "Add slash commands: /status, /new, /compact, /model, /usage. Parse before sending to LLM." },
+      { id: "live-canvas", name: "Live Canvas", desc: "Agent-driven visual workspace with charts, forms, rich content.", cat: "UX & Interaction", from: ["OpenClaw"], prompt: "Add a Live Canvas. Push interactive HTML/JS widgets, charts, tables, forms via WebSocket. Support A2UI." },
+      { id: "usage-tracking", name: "Usage Tracking", desc: "Track tokens, API costs, and latency per session.", cat: "UX & Interaction", from: ["OpenClaw"], prompt: "Add usage tracking. Log model, tokens, cost, latency per call. Expose via /usage command." },
+      { id: "group-mgmt", name: "Group Management", desc: "Mention-based activation, per-group memory, admin controls.", cat: "UX & Interaction", from: ["OpenClaw", "NanoClaw"], prompt: "Add group chat management. Respond only when mentioned. Per-group isolated memory. Admin-only commands." },
+    ];
+
+    // ── STATE ──
+    let selected = new Set();
+    let activeCategory = 'All';
+    let searchQuery = '';
+    const categories = ['All', ...Object.keys(CAT_CONFIG)];
+    document.getElementById('totalCount').textContent = FEATURES.length;
+
+    // ── CATEGORY NAV ──
+    const catNav = document.getElementById('catNav');
+    categories.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-btn' + (c === 'All' ? ' active' : '');
+      const cfg = CAT_CONFIG[c];
+      btn.innerHTML = c === 'All'
+        ? '<span class="emoji">🌊</span> All'
+        : `<span class="emoji">${cfg.emoji}</span> ${cfg.label}`;
+      if (c !== 'All' && cfg) btn.style.setProperty('--cat-color', cfg.color);
+      btn.onclick = () => {
+        document.querySelectorAll('.cat-btn').forEach(e => e.classList.remove('active'));
+        btn.classList.add('active');
+        if (c !== 'All') btn.style.background = cfg.color;
+        activeCategory = c;
+        // reset other button styles
+        document.querySelectorAll('.cat-btn').forEach(e => {
+          if (!e.classList.contains('active')) e.style.background = '';
+        });
+        render();
+      };
+      catNav.appendChild(btn);
+    });
+
+    // initial active style
+    document.querySelector('.cat-btn.active').style.background = '#22d3a8';
+
+    document.getElementById('search').addEventListener('input', e => {
+      searchQuery = e.target.value.toLowerCase();
+      render();
+    });
+
+    function render() {
+      const content = document.getElementById('content');
+      const filtered = FEATURES.filter(f => {
+        if (activeCategory !== 'All' && f.cat !== activeCategory) return false;
+        if (searchQuery && !f.name.toLowerCase().includes(searchQuery) && !f.desc.toLowerCase().includes(searchQuery)) return false;
+        return true;
+      });
+
+      // Group by category
+      const grouped = {};
+      filtered.forEach(f => { (grouped[f.cat] = grouped[f.cat] || []).push(f); });
+
+      if (filtered.length === 0) {
+        content.innerHTML = '<div class="empty">No features match your search 🌴</div>';
+        updateBasket(); return;
+      }
+
+      let html = '';
+      for (const [cat, items] of Object.entries(grouped)) {
+        const cfg = CAT_CONFIG[cat];
+        html += `<div class="section-header">
+      <span class="emoji">${cfg.emoji}</span>
+      <h2 style="color:${cfg.color}">${cat}</h2>
+      <div class="line" style="background:${cfg.color}"></div>
+      <span class="count">${items.length}</span>
+    </div>`;
+        html += '<div class="section-grid">';
+        items.forEach(f => {
+          html += `<div class="card${selected.has(f.id) ? ' selected' : ''}" onclick="toggle('${f.id}')" style="--c:${cfg.color}">
+        <h3><span class="emoji">${cfg.emoji}</span> ${f.name}</h3>
+        <p>${f.desc}</p>
+        <div class="origin">${f.from.map(s => `<span>${s}</span>`).join('')}</div>
+      </div>`;
+        });
+        html += '</div>';
+      }
+      content.innerHTML = html;
+
+      // Apply card hover color via CSS var
+      document.querySelectorAll('.card').forEach(card => {
+        const c = card.style.getPropertyValue('--c');
+        card.querySelector('h3').style.color = c;
+        card.style.setProperty('--hover-border', c);
+        card.addEventListener('mouseenter', () => { if (!card.classList.contains('selected')) card.style.borderColor = c; card.querySelector('::before') });
+        card.addEventListener('mouseleave', () => { if (!card.classList.contains('selected')) card.style.borderColor = ''; });
+        // top accent bar
+        const before = card.querySelector('h3');
+        card.style.borderTopColor = selected.has(card.getAttribute('onclick')?.match(/'(.+?)'/)?.[1]) ? 'var(--green)' : '';
+      });
+
+      updateBasket();
+    }
+
+    function toggle(id) {
+      selected.has(id) ? selected.delete(id) : selected.add(id);
+      render();
+    }
+
+    function updateBasket() {
+      const count = selected.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('basketCount').textContent = count;
+      document.getElementById('basket').classList.toggle('hidden', count === 0);
+    }
+
+    function clearBasket() { selected.clear(); render(); }
+
+    function openModal() {
+      const items = FEATURES.filter(f => selected.has(f.id));
+      const grouped = {};
+      items.forEach(f => { (grouped[f.cat] = grouped[f.cat] || []).push(f); });
+      let prompt = `I want you to add the following ${items.length} features to my Gravity Claw AI agent.\n\nProject: TypeScript/Node.js Telegram bot at /Users/jackroberts/Gravityclawwwww\nArchitecture: Agentic tool loop, MCP bridge, SQLite memory, hot-swappable LLM providers.\n\n`;
+      prompt += `━━━ FEATURES TO BUILD ━━━\n\n`;
+      Object.entries(grouped).forEach(([cat, feats]) => {
+        const cfg = CAT_CONFIG[cat];
+        prompt += `${cfg.emoji} ${cat}\n\n`;
+        feats.forEach((f, i) => {
+          prompt += `${i + 1}. ${f.name}\n   ${f.prompt}\n\n`;
+        });
+      });
+      prompt += `━━━━━━━━━━━━━━━━━━━━━━━\n\nImplement each feature one at a time. Create new files in appropriate src/ subdirectories. Update index.ts to wire everything. Ensure TypeScript compiles cleanly.`;
+      document.getElementById('promptOutput').textContent = prompt;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (e && e.target !== document.getElementById('modalOverlay')) return;
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    function copyPrompt() {
+      navigator.clipboard.writeText(document.getElementById('promptOutput').textContent);
+      const t = document.getElementById('toast');
+      t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    render();
+  </script>
+</body>
+
+</html>
